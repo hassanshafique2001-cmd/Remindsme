@@ -1,0 +1,80 @@
+{
+  "expo": {
+    "name": "Reminds Me",
+    "slug": "remind-me",
+    "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "scheme": "remindme",
+    "orientation": "portrait",
+    "icon": "./assets/logo.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sheikhgroup.remindsme"
+    },
+    "android": {
+      "package": "com.sheikhgroup.remindsme",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff",
+        "foregroundImage": "./assets/logo.png"
+      },
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/logo.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#ffffff"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/logo.png",
+          "imageWidth": 140,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "image": "./assets/logo.png",
+            "backgroundColor": "#121212"
+          }
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Reminds Me to use Face ID to unlock the app."
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "iosAppId": "ca-app-pub-7606267073452752~2255831508",
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "userTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you."
+        }
+      ],
+      "expo-quick-actions"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e8ed945c-acf2-4e95-8b1f-eb34df2382bd"
+      }
+    },
+    "owner": "sheikh-group",
+    "updates": {
+      "url": "https://u.expo.dev/e8ed945c-acf2-4e95-8b1f-eb34df2382bd"
+    }
+  }
+}
