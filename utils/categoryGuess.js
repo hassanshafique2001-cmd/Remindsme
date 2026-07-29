@@ -8,7 +8,22 @@ const EXTRA_KEYWORDS = {
   car: ["car", "auto loan", "vehicle", "auto finance"],
   insurance: ["insurance"],
   subscription: ["subscription", "streaming"],
-  bills: ["bill", "utility", "utilities", "electric", "electricity", "gas", "power", "energy"],
+  bills: [
+    "bill",
+    "utility",
+    "utilities",
+    "electric",
+    "electricity",
+    "gas",
+    "power",
+    "energy",
+    "phone",
+    "cell",
+    "cellphone",
+    "wireless",
+    "mobile",
+    "carrier",
+  ],
   other: [],
 };
 

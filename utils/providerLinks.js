@@ -69,6 +69,22 @@ export const PROVIDER_LINKS = {
   "Puget Sound Energy": { webUrl: "https://www.pse.com/" },
   "Atmos Energy": { webUrl: "https://www.atmosenergy.com/" },
   "Southwest Gas": { webUrl: "https://www.swgas.com/" },
+
+  // Bills (mobile/phone carriers)
+  "Verizon": { webUrl: "https://www.verizon.com/" },
+  "AT&T": { webUrl: "https://www.att.com/" },
+  "T-Mobile": { webUrl: "https://www.t-mobile.com/" },
+  "Boost Mobile": { webUrl: "https://www.boostmobile.com/" },
+  "Cricket Wireless": { webUrl: "https://www.cricketwireless.com/" },
+  "Metro by T-Mobile": { webUrl: "https://www.metrobyt-mobile.com/" },
+  "Mint Mobile": { webUrl: "https://www.mintmobile.com/" },
+  "Visible": { webUrl: "https://www.visible.com/" },
+  "US Cellular": { webUrl: "https://www.uscellular.com/" },
+  "Google Fi": { webUrl: "https://fi.google.com/" },
+  "Xfinity Mobile": { webUrl: "https://www.xfinity.com/mobile" },
+  "Spectrum Mobile": { webUrl: "https://www.spectrum.com/mobile" },
+  "Straight Talk": { webUrl: "https://www.straighttalk.com/" },
+  "Consumer Cellular": { webUrl: "https://www.consumercellular.com/" },
 };
 
 export function getProviderLink(providerName) {
