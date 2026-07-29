@@ -377,7 +377,10 @@ export default function PaymentDetailScreen() {
           },
           headerRight: () => (
             <Link href={{ pathname: "/add-payment", params: { id: payment.id } }} asChild>
-              <TouchableOpacity style={styles.editButton}>
+              <TouchableOpacity
+                style={styles.editButton}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
                 <Ionicons name="pencil" size={20} color={category.color} />
               </TouchableOpacity>
             </Link>
@@ -448,12 +451,16 @@ function getStyles(theme) {
       backgroundColor: theme.background,
     },
     container: {
+      flexGrow: 1,
       alignItems: "center",
       padding: 24,
     },
     editButton: {
+      width: 32,
+      height: 32,
       marginRight: 12,
-      padding: 4,
+      alignItems: "center",
+      justifyContent: "center",
     },
     iconBadge: {
       width: 64,
