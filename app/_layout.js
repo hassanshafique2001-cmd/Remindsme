@@ -5,6 +5,7 @@ import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useFonts, Pacifico_400Regular } from "@expo-google-fonts/pacifico";
 import { Quicksand_700Bold } from "@expo-google-fonts/quicksand";
 import * as SplashScreen from "expo-splash-screen";
@@ -270,10 +271,12 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ThemedApp fontsLoaded={fontsLoaded} />
-      </AuthProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <AuthProvider>
+          <ThemedApp fontsLoaded={fontsLoaded} />
+        </AuthProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

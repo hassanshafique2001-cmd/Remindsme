@@ -424,7 +424,10 @@ function SignedInView({ user, theme, styles }) {
       : null;
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.signedInScrollContainer}
+      contentContainerStyle={styles.signedInContent}
+    >
       <View style={styles.profileCard}>
         <View style={styles.avatar}>
           <Ionicons name="person" size={40} color={theme.primary} />
@@ -463,7 +466,7 @@ function SignedInView({ user, theme, styles }) {
       <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
         <Text style={styles.signOutButtonText}>Log out</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -492,6 +495,20 @@ function getStyles(theme) {
     container: {
       flex: 1,
       backgroundColor: theme.background,
+      padding: 24,
+      justifyContent: "space-between",
+    },
+    // Signed-in view mein ab kaafi saare sections hain (Security/Theme/View
+    // preference/Backup) - chhoti screens par yeh sab mila kar screen se lambe
+    // ho sakte hain, is liye ScrollView chahiye (warna "Log out" button neeche
+    // clip ho kar naa-pahunch ban jata hai). flexGrow:1 + space-between rakhne
+    // se content chhota ho to bhi "Log out" screen ke bilkul neeche hi rehta hai.
+    signedInScrollContainer: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    signedInContent: {
+      flexGrow: 1,
       padding: 24,
       justifyContent: "space-between",
     },

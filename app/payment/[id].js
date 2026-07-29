@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Animated, PanResponder, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Animated, PanResponder, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, Stack, useLocalSearchParams } from "expo-router";
 import { getPayments } from "../../utils/storage";
@@ -365,7 +365,10 @@ export default function PaymentDetailScreen() {
   const isHandled = payment.isRecurring ? payment.isPaid && !dueSoon : payment.isPaid;
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.scrollContainer}
+      contentContainerStyle={styles.container}
+    >
       <Stack.Screen
         options={{
           title: "Payment Details",
@@ -430,15 +433,21 @@ export default function PaymentDetailScreen() {
           )}
         </>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 function getStyles(theme) {
   return StyleSheet.create({
-    container: {
+    // Payoff card + poori monthly history + skip button jaise optional
+    // sections chhoti screens par mila kar viewport se lambe ho sakte hain,
+    // is liye poora content ScrollView mein hai (container ab uski
+    // contentContainerStyle hai, isi liye "flex: 1" yahan nahi, scrollContainer mein hai).
+    scrollContainer: {
       flex: 1,
       backgroundColor: theme.background,
+    },
+    container: {
       alignItems: "center",
       padding: 24,
     },

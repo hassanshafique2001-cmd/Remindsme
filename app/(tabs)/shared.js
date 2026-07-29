@@ -101,6 +101,15 @@ export default function SharedBillsScreen() {
     return unsubscribe;
   }, [user]);
 
+  // Ad banner ko list ke andar hi ek "card slot" ki tarah dikhate hain -
+  // 3rd card ke baad 4th slot pe (3 se kam cards hon to sabse aakhir mein).
+  const billsWithAd = useMemo(() => {
+    if (bills.length === 0) return bills;
+    const withAd = [...bills];
+    withAd.splice(Math.min(3, bills.length), 0, { id: "__ad_banner__", isAdSlot: true });
+    return withAd;
+  }, [bills]);
+
   if (!user) {
     return (
       <View style={styles.emptyState}>
@@ -122,17 +131,23 @@ export default function SharedBillsScreen() {
           <Text style={styles.emptySubtitle}>
             Split a bill with a roommate or partner - they'll need a Reminds Me account too.
           </Text>
+          <AdBanner />
+          <AdBanner />
         </View>
       ) : (
         <FlatList
-          data={bills}
+          data={billsWithAd}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <SharedBillCard bill={item} myUid={user.uid} styles={styles} theme={theme} />}
+          renderItem={({ item }) =>
+            item.isAdSlot ? (
+              <AdBanner />
+            ) : (
+              <SharedBillCard bill={item} myUid={user.uid} styles={styles} theme={theme} />
+            )
+          }
           contentContainerStyle={styles.list}
         />
       )}
-
-      <AdBanner />
 
       <Link href="/add-shared-bill" asChild>
         <TouchableOpacity style={styles.fab}>

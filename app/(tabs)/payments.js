@@ -5,7 +5,6 @@ import {
   FlatList,
   LayoutAnimation,
   Linking,
-  PanResponder,
   Platform,
   RefreshControl,
   ScrollView,
@@ -16,6 +15,7 @@ import {
   UIManager,
   View,
 } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { deletePayment, getPayments } from "../../utils/storage";
@@ -322,85 +322,49 @@ function PaymentCard({ payment, onPress, styles, theme }) {
   );
 }
 
-// Card ko left swipe karne par peeche ek delete (dustbin) button reveal hota hai.
-// Simple tap card ke apne onPress ko chalne deta hai - responder sirf tabhi claim
-// hota hai jab movement kaafi horizontal ho (taake FlatList ka vertical scroll na tootay).
+// Card ko left swipe karne par peeche ek delete (dustbin) button reveal hota
+// hai. Hand-rolled PanResponder wala pehla version kabhi kabhi beech mein
+// atak jata tha aur smooth nahi tha - ab "react-native-gesture-handler" ki
+// battle-tested "Swipeable" use karte hain, jo yehi kaam nativately, buttery
+// smooth tareeqe se karta hai (velocity-aware open/close, koi manual
+// threshold math nahi).
 function SwipeableRow({ children, onDelete, styles }) {
-  const translateX = useRef(new Animated.Value(0)).current;
-  const isOpen = useRef(false);
-  // Gesture shuru hote hi current animated value capture kar lete hain, taake
-  // pehli move par koi "jump" na ho - tracking bilkul finger ke sath shuru hoti hai.
-  const startX = useRef(0);
-
-  // Agar row pehle se open hai to touch turant capture kar lete hain - taake
-  // us par tap sirf row ko band kare, andar wale card ka onPress (navigate) na chale.
-  const wasOpenAtGrant = useRef(false);
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => isOpen.current,
-      // TouchableOpacity apne taur par bhi ~20px tak ki chhoti movement ko "tap"
-      // hi samajhta hai (apna internal press-cancel tolerance). Agar hamara
-      // threshold usse chhota rakhein to hum TouchableOpacity se PEHLE hi
-      // responder chura lete hain aur tap glitch ho jata hai. Isliye 24px se
-      // bara aur sirf LEFTWARD (dx < 0) movement par hi row open karne ke liye
-      // claim karte hain - dayen taraf ka jitter ya chhota tap kabhi claim nahi karega.
-      onMoveShouldSetPanResponder: (_, gesture) =>
-        gesture.dx < -24 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 2.5,
-      onPanResponderGrant: () => {
-        wasOpenAtGrant.current = isOpen.current;
-        translateX.stopAnimation((value) => {
-          startX.current = value;
-        });
-      },
-      onPanResponderMove: (_, gesture) => {
-        let x = startX.current + gesture.dx;
-        // Dono taraf halki "rubber-band" resistance - hard stop ki jagah smooth give.
-        if (x > 0) x *= 0.25;
-        if (x < -DELETE_WIDTH) x = -DELETE_WIDTH + (x + DELETE_WIDTH) * 0.25;
-        translateX.setValue(x);
-      },
-      onPanResponderRelease: (_, gesture) => {
-        const totalMovement = Math.abs(gesture.dx) + Math.abs(gesture.dy);
-        // Open row par sirf tap hua (real drag nahi) - to bas ise band kar do.
-        if (wasOpenAtGrant.current && totalMovement < 10) {
-          isOpen.current = false;
-          Animated.spring(translateX, {
-            toValue: 0,
-            useNativeDriver: true,
-            friction: 8,
-            tension: 80,
-          }).start();
-          return;
-        }
-        const finalX = startX.current + gesture.dx;
-        const shouldOpen = finalX < -DELETE_WIDTH / 2;
-        isOpen.current = shouldOpen;
-        Animated.spring(translateX, {
-          toValue: shouldOpen ? -DELETE_WIDTH : 0,
-          useNativeDriver: true,
-          friction: 8,
-          tension: 80,
-        }).start();
-      },
-    })
-  ).current;
+  const swipeableRef = useRef(null);
 
   function handleDeletePress() {
-    isOpen.current = false;
+    swipeableRef.current?.close();
     onDelete();
+  }
+
+  function renderRightActions(_progress, dragX) {
+    // Delete background sirf tabhi dikhta hai jab row asal mein swipe ho rahi
+    // ho - row band hote hue bhi card ke apne tap-press dim effect ki wajah
+    // se peeche se laal na dikhe.
+    const opacity = dragX.interpolate({
+      inputRange: [-DELETE_WIDTH, 0],
+      outputRange: [1, 0],
+      extrapolate: "clamp",
+    });
+    return (
+      <Animated.View style={[styles.deleteAction, { opacity }]}>
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDeletePress}>
+          <Ionicons name="trash-outline" size={22} color="#fff" />
+        </TouchableOpacity>
+      </Animated.View>
+    );
   }
 
   return (
     <View style={styles.swipeableContainer}>
-      <View style={styles.deleteAction}>
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDeletePress}>
-          <Ionicons name="trash-outline" size={22} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      <Animated.View {...panResponder.panHandlers} style={{ transform: [{ translateX }] }}>
+      <Swipeable
+        ref={swipeableRef}
+        renderRightActions={renderRightActions}
+        overshootRight={false}
+        rightThreshold={40}
+        friction={1.5}
+      >
         {children}
-      </Animated.View>
+      </Swipeable>
     </View>
   );
 }
@@ -534,6 +498,15 @@ export default function PaymentsScreen() {
   const list = activeTab === "upcoming" ? visibleUpcoming : visibleHistory;
   const hasActiveFilter = Boolean(selectedCategory || searchText.trim());
 
+  // Ad banner ko list ke andar hi ek "card slot" ki tarah dikhate hain -
+  // 3rd card ke baad 4th slot pe (3 se kam cards hon to sabse aakhir mein).
+  const listWithAd = useMemo(() => {
+    if (list.length === 0) return list;
+    const withAd = [...list];
+    withAd.splice(Math.min(3, list.length), 0, { id: "__ad_banner__", isAdSlot: true });
+    return withAd;
+  }, [list]);
+
   return (
     <View style={styles.container}>
       <MonthSummaryCard payments={payments} styles={styles} theme={theme} />
@@ -649,21 +622,27 @@ export default function PaymentsScreen() {
               ? "Tap the button below to add a payment reminder."
               : "One-time payments you mark as paid will show up here."}
           </Text>
+          <AdBanner />
+          <AdBanner />
         </View>
       ) : (
         <FlatList
-          data={list}
+          data={listWithAd}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <SwipeableRow onDelete={() => handleDelete(item)} styles={styles}>
-              <PaymentCard
-                payment={item}
-                onPress={() => router.push(getPaymentDetailRoute(item))}
-                styles={styles}
-                theme={theme}
-              />
-            </SwipeableRow>
-          )}
+          renderItem={({ item }) =>
+            item.isAdSlot ? (
+              <AdBanner />
+            ) : (
+              <SwipeableRow onDelete={() => handleDelete(item)} styles={styles}>
+                <PaymentCard
+                  payment={item}
+                  onPress={() => router.push(getPaymentDetailRoute(item))}
+                  styles={styles}
+                  theme={theme}
+                />
+              </SwipeableRow>
+            )
+          }
           contentContainerStyle={styles.list}
           refreshControl={
             <RefreshControl
@@ -675,8 +654,6 @@ export default function PaymentsScreen() {
           }
         />
       )}
-
-      <AdBanner />
 
       <Link href="/choose-payment-type" asChild>
         <TouchableOpacity style={styles.fab}>
@@ -889,16 +866,11 @@ function getStyles(theme) {
       padding: 16,
     },
     swipeableContainer: {
-      position: "relative",
       marginBottom: 12,
       borderRadius: 12,
       overflow: "hidden",
     },
     deleteAction: {
-      position: "absolute",
-      top: 0,
-      bottom: 0,
-      right: 0,
       width: DELETE_WIDTH,
       backgroundColor: theme.danger,
       alignItems: "center",
