@@ -17,16 +17,21 @@ const TEST_BANNER_UNIT_ID = {
   android: "ca-app-pub-3940256099942544/6300978111",
 };
 
-// Real (iOS) banner ad unit - AdMob console se liya gaya. Android ke liye
-// abhi apna koi registered ad unit nahi hai, is liye wahan hamesha test ad hi chalega.
+// Real banner ad units - AdMob console se liye gaye.
 const REAL_IOS_BANNER_UNIT_ID = "ca-app-pub-7606267073452752/5592441285";
+const REAL_ANDROID_BANNER_UNIT_ID = "ca-app-pub-7606267073452752/9482798410";
+
+const REAL_BANNER_UNIT_ID = {
+  ios: REAL_IOS_BANNER_UNIT_ID,
+  android: REAL_ANDROID_BANNER_UNIT_ID,
+};
 
 // Development build mein hamesha test ad dikhate hain - taake apne banaye
 // hue AdMob account par galti se invalid clicks/impressions na jayein jab
 // tak app publish na ho jaye.
 export function getBannerAdUnitId() {
-  if (__DEV__ || Platform.OS !== "ios") {
+  if (__DEV__) {
     return TEST_BANNER_UNIT_ID[Platform.OS] ?? TEST_BANNER_UNIT_ID.android;
   }
-  return REAL_IOS_BANNER_UNIT_ID;
+  return REAL_BANNER_UNIT_ID[Platform.OS] ?? REAL_BANNER_UNIT_ID.android;
 }
