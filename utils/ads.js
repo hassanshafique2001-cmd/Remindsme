@@ -26,11 +26,16 @@ const REAL_BANNER_UNIT_ID = {
   android: REAL_ANDROID_BANNER_UNIT_ID,
 };
 
-// Development build mein hamesha test ad dikhate hain - taake apne banaye
-// hue AdMob account par galti se invalid clicks/impressions na jayein jab
-// tak app publish na ho jaye.
+// Sirf "production" EAS profile (asli Play Store release) mein real ads
+// dikhate hain - "preview" jesi testing builds bhi __DEV__ false hoti hain,
+// is liye sirf usi par bharosa nahi kar sakte. EXPO_PUBLIC_USE_REAL_ADS
+// sirf production profile mein set hai (eas.json), taake closed/internal
+// testers galti se real ad pe click karke AdMob account ko invalid-traffic
+// risk mein na daalein.
+const useRealAds = process.env.EXPO_PUBLIC_USE_REAL_ADS === "true";
+
 export function getBannerAdUnitId() {
-  if (__DEV__) {
+  if (__DEV__ || !useRealAds) {
     return TEST_BANNER_UNIT_ID[Platform.OS] ?? TEST_BANNER_UNIT_ID.android;
   }
   return REAL_BANNER_UNIT_ID[Platform.OS] ?? REAL_BANNER_UNIT_ID.android;
