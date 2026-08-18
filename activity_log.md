@@ -12,3 +12,10 @@ Most recent entry at the bottom.
   - Privacy Policy: https://claude.ai/code/artifact/f2ce82fa-1521-4e0e-a593-64d3cbdcd84c
   - Account/data deletion instructions: https://claude.ai/code/artifact/d4898c44-a313-40a3-b1ee-6a5cde1ff254
 - Store listing drafted in Play Console: category Finance, tags Personal finance/Productivity/Calendar, short + full description written, 1024x500 feature graphic uploaded.
+- Play Console "Apply for production" questionnaire answered (tester engagement, feedback summary, intended audience, value proposition, expected installs, production-readiness changes/rationale) — all drafted as 300-char answers and submitted.
+- Fixed an incorrect duplicate package registration in Google's new "Android developer verification" system (`com.sheikhgroups.remindsme`, typo'd extra "s") — the correct `com.sheikhgroup.remindsme` was already auto-registered and verified there, nothing further needed.
+
+## 2026-08-18
+- Started iOS publishing. Apple Developer Program account already enrolled (individual, Team ID `S9UULLAT35`). Created the App Store Connect app record ("Reminds Me - Bill Tracker" — "Reminds Me" alone was taken) and registered the `com.sheikhgroup.remindsme` App ID on the Apple Developer portal (no extra capabilities needed — app uses only local notifications, no push/Sign in with Apple/etc).
+- Ran `eas build --platform ios --profile production` — EAS generated a Distribution Certificate, Provisioning Profile, and an APNs push key (unused — app only schedules local notifications, the push capability EAS enabled by default is harmless dead weight). Build succeeded: https://expo.dev/artifacts/eas/y1Ge53xmd6WYWfspcyw6YnlyVZTt45JPgmMcpoyrftk.ipa
+- Ran `eas submit --platform ios --latest` using a newly generated App Store Connect API Key (APP_MANAGER role, least-privilege). Submission succeeded — build is now processing on Apple's side (ASC App ID `6802544860`), will appear in TestFlight once done (~5-10 min).
