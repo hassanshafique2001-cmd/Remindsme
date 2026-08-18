@@ -12,7 +12,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sheikhgroup.remindsme"
+      "bundleIdentifier": "com.sheikhgroup.remindsme",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.sheikhgroup.remindsme",

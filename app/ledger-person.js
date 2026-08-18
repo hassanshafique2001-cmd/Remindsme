@@ -163,7 +163,7 @@ export default function LedgerPersonScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Stack.Screen options={{ title: name ?? "Ledger" }} />
+      <Stack.Screen options={{ title: name ?? "Ledger", headerBackTitle: "" }} />
 
       <View
         style={[
