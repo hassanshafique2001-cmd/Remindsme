@@ -11,7 +11,7 @@
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.sheikhgroup.remindsme",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -63,8 +63,7 @@
         "react-native-google-mobile-ads",
         {
           "iosAppId": "ca-app-pub-7606267073452752~2255831508",
-          "androidAppId": "ca-app-pub-7606267073452752~9674370101",
-          "userTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you."
+          "androidAppId": "ca-app-pub-7606267073452752~9674370101"
         }
       ],
       "expo-quick-actions"
