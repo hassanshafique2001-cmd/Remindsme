@@ -35,4 +35,14 @@ Wave 1 (implemented + verified in web preview, no console errors):
 - `app/(tabs)/payments.js`: month summary became a gradient banner; Upcoming/Paid tabs restyled as a pill segmented control; payment cards got premium radius/border/shadow; FAB now has a pink→purple gradient.
 - `utils/dueDate.js` + `payments.js`: implemented the requested **urgent due-date warning** — a small pulsing amber caution icon (opacity 100%→45%→100%, ~0.9s cycle) appears next to the due date only when a payment is unpaid, not overdue, and due within 1 day/today. Verified via seeded test data that it correctly shows only on the due-in-10-hours card and not on the overdue or 5-days-out cards.
 
-**Explicitly NOT done yet** (deferred, to avoid overclaiming): Payment Detail screen polish, Shared screen cards, Profile screen reorganization (auth area, settings sections), button-system consolidation, skeleton loading states, empty/error state polish, full accessibility pass, cross-device responsive testing, and the full 30-item testing matrix from the spec. Only source-level implementation + web-preview verification was done — no real-device testing performed yet.
+**Explicitly NOT done yet** (deferred, to avoid overclaiming): button-system consolidation into shared components, skeleton loading states, empty/error state polish, full accessibility pass, cross-device responsive testing, and the full 30-item testing matrix from the spec. Only source-level implementation + web-preview verification was done — no real-device testing performed yet for wave 2.
+
+Wave 2 (implemented + verified in web preview, no console errors):
+- Extracted the urgent-due-icon into a shared `components/UrgentDueIcon.js` (was duplicated inline in `payments.js`) and also wired it into `app/payment/[id].js`'s due date row for consistency.
+- `app/payment/[id].js`: icon badge, swipe-to-pay track now use category-color gradients; payoff card, history chips got premium radius/border.
+- `app/(tabs)/shared.js`: cards got premium radius/border/shadow; "Mark My Share as Paid" button and FAB now use the pink→purple brand gradient (previously flat category-color/primary).
+- `app/(tabs)/profile.js`: avatar (both signed-out and signed-in), Sign In/Sign Up submit button now use the brand gradient; Appearance and Payments-Default-View segmented pickers' active state is now a gradient pill instead of flat `theme.primary`; input fields and info/security cards got premium radius bump.
+
+Two live bugs reported by the user testing via Expo Go on Android were also fixed in this pass: dashboard stat-card watermark icons were too large (shrunk from 46/52px to 22/24px, repositioned inward), and the bottom tab bar was getting clipped by the system nav bar (fixed height ignored `useSafeAreaInsets()` — now `height: 58 + insets.bottom` with matching `paddingBottom`).
+
+Next: user asked to build a new Android production APK/AAB now that both waves are in (native `expo-linear-gradient` dependency requires a real build, can't ship via OTA). iOS is intentionally left on its current App-Store-review build until the user asks for an iOS rebuild separately.
