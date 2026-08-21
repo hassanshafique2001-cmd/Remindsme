@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { getPayments } from "../../utils/storage";
 import { CATEGORIES, getCategory } from "../../utils/categories";
 import { useTheme, withAlpha } from "../../utils/theme";
@@ -167,9 +168,17 @@ function SpendingTrendsChart({ trend, styles, theme }) {
   );
 }
 
-function StatTile({ label, value, styles, valueStyle, tileStyle }) {
+function StatTile({ label, value, styles, valueStyle, tileStyle, icon, iconColor }) {
   return (
     <View style={[styles.statTile, tileStyle]}>
+      {icon && (
+        <Ionicons
+          name={icon}
+          size={46}
+          color={iconColor}
+          style={styles.statWatermark}
+        />
+      )}
       <Text style={styles.statLabel}>{label}</Text>
       <Text style={[styles.statValue, valueStyle]}>${value}</Text>
     </View>
@@ -232,26 +241,38 @@ export default function DashboardScreen() {
           label="Due This Month"
           value={stats.dueThisMonth}
           styles={styles}
+          icon="calendar"
+          iconColor={withAlpha(theme.warning, 0.18)}
           valueStyle={{ color: theme.warning }}
-          tileStyle={{ backgroundColor: withAlpha(theme.warning, theme.mode === "dark" ? 0.18 : 0.09) }}
+          tileStyle={{
+            backgroundColor: withAlpha(theme.warning, theme.mode === "dark" ? 0.16 : 0.09),
+            borderColor: withAlpha(theme.warning, theme.mode === "dark" ? 0.3 : 0.16),
+          }}
         />
         <StatTile
           label="Paid This Month"
           value={stats.paidThisMonth}
           styles={styles}
+          icon="checkmark-circle"
+          iconColor={withAlpha(theme.primary, 0.18)}
           valueStyle={{ color: theme.primary }}
-          tileStyle={{ backgroundColor: withAlpha(theme.primary, theme.mode === "dark" ? 0.2 : 0.1) }}
+          tileStyle={{
+            backgroundColor: withAlpha(theme.primary, theme.mode === "dark" ? 0.18 : 0.1),
+            borderColor: withAlpha(theme.primary, theme.mode === "dark" ? 0.32 : 0.18),
+          }}
         />
       </View>
-      <View
-        style={[
-          styles.statTileWide,
-          { backgroundColor: withAlpha(theme.info, theme.mode === "dark" ? 0.18 : 0.08) },
-        ]}
+
+      <LinearGradient
+        colors={[withAlpha(theme.gradientStart, theme.mode === "dark" ? 0.22 : 0.14), withAlpha(theme.gradientEnd, theme.mode === "dark" ? 0.22 : 0.14)]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.statTileWide}
       >
+        <Ionicons name="trending-up" size={52} color={withAlpha(theme.brandPurple, 0.2)} style={styles.statWatermark} />
         <Text style={styles.statLabel}>Total Upcoming</Text>
-        <Text style={[styles.statValueLarge, { color: theme.info }]}>${stats.upcomingTotal}</Text>
-      </View>
+        <Text style={[styles.statValueLarge, { color: theme.brandPurpleDeep }]}>${stats.upcomingTotal}</Text>
+      </LinearGradient>
 
       {disciplineScore !== null && (
         <View
@@ -260,11 +281,32 @@ export default function DashboardScreen() {
             {
               backgroundColor: withAlpha(
                 disciplineScore >= 90 ? theme.primary : disciplineScore >= 70 ? theme.warning : theme.danger,
-                theme.mode === "dark" ? 0.18 : 0.09
+                theme.mode === "dark" ? 0.16 : 0.09
+              ),
+              borderColor: withAlpha(
+                disciplineScore >= 90 ? theme.primary : disciplineScore >= 70 ? theme.warning : theme.danger,
+                theme.mode === "dark" ? 0.3 : 0.16
               ),
             },
           ]}
         >
+          <View
+            style={[
+              styles.scoreIconBadge,
+              {
+                backgroundColor: withAlpha(
+                  disciplineScore >= 90 ? theme.primary : disciplineScore >= 70 ? theme.warning : theme.danger,
+                  theme.mode === "dark" ? 0.28 : 0.18
+                ),
+              },
+            ]}
+          >
+            <Ionicons
+              name="ribbon"
+              size={20}
+              color={disciplineScore >= 90 ? theme.primary : disciplineScore >= 70 ? theme.warning : theme.danger}
+            />
+          </View>
           <View style={styles.scoreTextGroup}>
             <Text style={styles.statLabel}>Payment Score</Text>
             <Text style={styles.scoreSubtext}>Share of payments made on time</Text>
@@ -288,15 +330,25 @@ export default function DashboardScreen() {
               label="You'll Receive"
               value={ledgerTotals.totalToReceive}
               styles={styles}
+              icon="arrow-down-circle"
+              iconColor={withAlpha(theme.primary, 0.18)}
               valueStyle={{ color: theme.primary }}
-              tileStyle={{ backgroundColor: withAlpha(theme.primary, theme.mode === "dark" ? 0.2 : 0.1) }}
+              tileStyle={{
+                backgroundColor: withAlpha(theme.primary, theme.mode === "dark" ? 0.18 : 0.1),
+                borderColor: withAlpha(theme.primary, theme.mode === "dark" ? 0.32 : 0.18),
+              }}
             />
             <StatTile
               label="You Owe"
               value={ledgerTotals.totalToPay}
               styles={styles}
+              icon="arrow-up-circle"
+              iconColor={withAlpha(theme.brandCoral, 0.2)}
               valueStyle={{ color: theme.danger }}
-              tileStyle={{ backgroundColor: withAlpha(theme.danger, theme.mode === "dark" ? 0.18 : 0.09) }}
+              tileStyle={{
+                backgroundColor: withAlpha(theme.brandCoral, theme.mode === "dark" ? 0.16 : 0.1),
+                borderColor: withAlpha(theme.brandCoral, theme.mode === "dark" ? 0.3 : 0.16),
+              }}
             />
           </View>
         </>
@@ -404,9 +456,14 @@ function getStyles(theme) {
       alignItems: "center",
       gap: 10,
       backgroundColor: theme.danger,
-      borderRadius: 12,
-      padding: 14,
-      marginBottom: 12,
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 14,
+      shadowColor: theme.danger,
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 4,
     },
     overdueBannerText: {
       color: "#fff",
@@ -440,38 +497,56 @@ function getStyles(theme) {
     statTile: {
       flex: 1,
       backgroundColor: theme.surface,
-      borderRadius: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
       padding: 16,
+      overflow: "hidden",
+    },
+    statWatermark: {
+      position: "absolute",
+      right: -6,
+      top: -6,
     },
     statTileWide: {
-      backgroundColor: theme.surface,
-      borderRadius: 12,
-      padding: 16,
-      marginTop: 12,
+      borderRadius: 18,
+      padding: 18,
+      marginTop: 14,
+      overflow: "hidden",
     },
     statLabel: {
       fontSize: 12,
+      fontWeight: "600",
       color: theme.textSecondary,
       marginBottom: 6,
     },
     statValue: {
-      fontSize: 20,
+      fontSize: 21,
       fontWeight: "700",
       color: theme.text,
     },
     statValueLarge: {
-      fontSize: 28,
+      fontSize: 30,
       fontWeight: "700",
       color: theme.text,
     },
     scoreCard: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
       backgroundColor: theme.surface,
-      borderRadius: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
       padding: 16,
-      marginTop: 12,
+      marginTop: 14,
+      gap: 12,
+    },
+    scoreIconBadge: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
     },
     scoreTextGroup: {
       flex: 1,
@@ -487,14 +562,17 @@ function getStyles(theme) {
     },
     sectionLabel: {
       fontSize: 13,
-      fontWeight: "600",
+      fontWeight: "700",
       color: theme.textSecondary,
       marginTop: 28,
       marginBottom: 12,
+      letterSpacing: 0.2,
     },
     categoryList: {
       backgroundColor: theme.surface,
-      borderRadius: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
       padding: 16,
       gap: 16,
     },
@@ -503,9 +581,9 @@ function getStyles(theme) {
       alignItems: "center",
     },
     categoryIconBadge: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
       backgroundColor: theme.primarySoft,
       alignItems: "center",
       justifyContent: "center",
@@ -541,7 +619,9 @@ function getStyles(theme) {
     },
     trendChartCard: {
       backgroundColor: theme.surface,
-      borderRadius: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
       padding: 16,
     },
     trendBarsRow: {
@@ -595,7 +675,9 @@ function getStyles(theme) {
       flexDirection: "row",
       alignItems: "center",
       backgroundColor: theme.surface,
-      borderRadius: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
       padding: 16,
     },
     nextCardContent: {

@@ -2,46 +2,92 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// Premium warm palette inspired by the app's bell logo (pink/coral/peach/
+// purple gradient with a mint-green money badge). "primary"/"danger"/etc.
+// keep their existing semantic meaning (primary = positive/success,
+// unchanged everywhere it's already used) - only the actual hex values and
+// the background/surface/text warmth changed, plus new "brand*"/"gradient*"
+// tokens were added for the new premium accents (FAB, primary CTAs, active
+// tab, splash glow) so no existing call site's meaning silently shifted.
 export const lightColors = {
   mode: "light",
-  background: "#f2f2f2",
-  surface: "#ffffff",
-  text: "#1c1c1e",
-  textSecondary: "#777777",
-  textMuted: "#999999",
-  border: "#dddddd",
-  primary: "#2e7d32",
-  primarySoft: "#e8f5e9",
-  danger: "#d32f2f",
-  dangerSoft: "#fdecea",
+  background: "#FBF5F1",
+  surface: "#FFFFFF",
+  surfaceSoft: "#FDF1EC",
+  text: "#2B2230",
+  textSecondary: "#7C6E76",
+  textMuted: "#AFA3AA",
+  border: "#F0E2E6",
+  primary: "#2E9E5B",
+  primarySoft: "#E3F5EB",
+  danger: "#E1483F",
+  dangerSoft: "#FBE9E7",
   // "Due soon lekin abhi overdue nahi" ke liye amber - danger (red) sirf
   // sach mein overdue payments ke liye reserve rehta hai.
-  warning: "#c77700",
-  warningSoft: "#fff2df",
-  // Generic "info" accent (blue) - jab kisi cheez ka koi specific category
-  // nahi hoti (jaise "Total Upcoming" jaisa overall summary) lekin phir bhi
-  // ek soft colored background chahiye hota hai.
-  info: "#2563eb",
-  infoSoft: "#e0ebfd",
+  warning: "#E08A2C",
+  warningSoft: "#FDF0DE",
+  // Generic "info" accent - jab kisi cheez ka koi specific category nahi
+  // hoti (jaise "Total Upcoming" jaisa overall summary) lekin phir bhi ek
+  // soft colored background chahiye hota hai. Brand purple family se liya
+  // hai taake dashboard ka overall accent bhi brand identity se juda rahe.
+  info: "#7C6FE0",
+  infoSoft: "#ECE9FB",
+  // Brand accents - logo ke pink/coral/peach/purple se, sirf naye premium
+  // treatments (buttons, FAB, active tab, splash glow) ke liye use hote hain.
+  brandPink: "#E85D9E",
+  brandCoral: "#F27C8D",
+  brandPeach: "#FFAD86",
+  brandOrange: "#F6A84A",
+  brandPurple: "#8E6CE8",
+  brandPurpleDeep: "#6D4CC7",
+  gradientStart: "#F2709C",
+  gradientEnd: "#8E6CE8",
 };
 
 export const darkColors = {
   mode: "dark",
-  background: "#121212",
-  surface: "#1e1e1e",
-  text: "#f2f2f2",
-  textSecondary: "#aaaaaa",
-  textMuted: "#888888",
-  border: "#3a3a3c",
-  primary: "#4caf50",
-  primarySoft: "#1e3a20",
-  danger: "#ef5350",
-  dangerSoft: "#3a2222",
-  warning: "#f0a020",
-  warningSoft: "#3a2e14",
-  info: "#5b9bf7",
-  infoSoft: "#1c2b47",
+  background: "#17121F",
+  surface: "#211B2C",
+  surfaceSoft: "#1C1725",
+  text: "#F5EFF2",
+  textSecondary: "#B8ACB5",
+  textMuted: "#8B7F87",
+  border: "#342C3E",
+  primary: "#4ADE94",
+  primarySoft: "#1E3A2C",
+  danger: "#FF6B6B",
+  dangerSoft: "#3A2429",
+  warning: "#FFB454",
+  warningSoft: "#3A2E1C",
+  info: "#A78BFA",
+  infoSoft: "#2A2440",
+  brandPink: "#F472B6",
+  brandCoral: "#FB92A0",
+  brandPeach: "#FFC199",
+  brandOrange: "#FFC069",
+  brandPurple: "#A78BFA",
+  brandPurpleDeep: "#8B6FE0",
+  gradientStart: "#F472B6",
+  gradientEnd: "#A78BFA",
 };
+
+// Global type scale - naming se hi role clear hai, taake screens random
+// font-size na chunein. Sirf sizes/weights hain, theme-mode se independent.
+export const typeScale = {
+  display: { fontSize: 32, fontWeight: "700" },
+  screenTitle: { fontSize: 22, fontWeight: "700" },
+  sectionTitle: { fontSize: 15, fontWeight: "700" },
+  cardTitle: { fontSize: 16, fontWeight: "700" },
+  body: { fontSize: 14, fontWeight: "500" },
+  bodySmall: { fontSize: 13, fontWeight: "500" },
+  caption: { fontSize: 12, fontWeight: "600" },
+  microLabel: { fontSize: 11, fontWeight: "700", letterSpacing: 0.4 },
+  button: { fontSize: 15, fontWeight: "700" },
+};
+
+export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
+
+export const radius = { sm: 8, md: 12, lg: 16, xl: 20, pill: 999 };
 
 // Hex color ko rgba() mein convert karta hai - category badges/chips ke
 // "soft" background banane ke liye (solid category color ka halka sa tint,

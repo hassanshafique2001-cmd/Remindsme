@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Dimensions, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs, usePathname } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useTheme, withAlpha } from "../../utils/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hasSeenSignupNudge, markSignupNudgeSeen } from "../../utils/onboarding";
@@ -68,14 +69,32 @@ function PaymentsHeaderTitle({ theme }) {
   );
 }
 
-// Pehle ek padded "pill" View mein wrap kiya tha jo tab bar ke fixed icon-slot
-// se bari nikal kar clip ho rahi thi (icon ghayab, sirf label bachta tha).
-// Ab sirf icon size/color seedha pass karte hain - koi extra wrapper nahi,
-// taake tab bar ka apna layout kabhi na tootay. Rang ab bhi har tab ka apna
-// hai (tabBarActiveTintColor se), bas peeche koi pill background nahi.
-function TabIcon({ name, size, color }) {
-  return <Ionicons name={name} size={size} color={color} />;
+// Active tab ke icon ke peeche ek chhota gradient "pill" medallion - us tab
+// ke apne accent color se banta hai (taake har tab ki color-identity qayam
+// rahe), sirf presentation premium hoti hai. Inactive icon plain rehta hai.
+function TabIcon({ name, size, color, focused, accent }) {
+  if (!focused) return <Ionicons name={name} size={size} color={color} />;
+  return (
+    <LinearGradient
+      colors={[withAlpha(accent, 0.24), withAlpha(accent, 0.12)]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={pillStyles.pill}
+    >
+      <Ionicons name={name} size={size} color={color} />
+    </LinearGradient>
+  );
 }
+
+const pillStyles = StyleSheet.create({
+  pill: {
+    width: 40,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
 
 // Sirf ek dafa, sabse pehle app-open par (SignupNudge se bhi pehle) dikhta
 // hai - har bottom tab ka ek step, "Skip" kabhi bhi poora tutorial khatam kar
@@ -224,7 +243,20 @@ export default function TabsLayout() {
         screenOptions={{
           headerStyle: { backgroundColor: theme.surface },
           headerTintColor: theme.text,
-          tabBarStyle: { backgroundColor: theme.surface, borderTopColor: theme.border },
+          tabBarStyle: {
+            backgroundColor: theme.surface,
+            borderTopWidth: 0,
+            borderTopLeftRadius: 22,
+            borderTopRightRadius: 22,
+            height: 68,
+            paddingTop: 8,
+            shadowColor: theme.brandPurple,
+            shadowOpacity: theme.mode === "dark" ? 0.25 : 0.1,
+            shadowRadius: 16,
+            shadowOffset: { width: 0, height: -4 },
+            elevation: 12,
+          },
+          tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
           tabBarInactiveTintColor: theme.textMuted,
         }}
       >
@@ -233,8 +265,8 @@ export default function TabsLayout() {
           options={{
             title: "Dashboard",
             tabBarActiveTintColor: TAB_ACCENTS.dashboard,
-            tabBarIcon: ({ size, color }) => (
-              <TabIcon name="bar-chart-outline" size={size} color={color} />
+            tabBarIcon: ({ size, color, focused }) => (
+              <TabIcon name="bar-chart-outline" size={size} color={color} focused={focused} accent={TAB_ACCENTS.dashboard} />
             ),
           }}
         />
@@ -245,8 +277,8 @@ export default function TabsLayout() {
             headerTitleAlign: "center",
             tabBarLabel: "Payments",
             tabBarActiveTintColor: TAB_ACCENTS.payments,
-            tabBarIcon: ({ size, color }) => (
-              <TabIcon name="wallet-outline" size={size} color={color} />
+            tabBarIcon: ({ size, color, focused }) => (
+              <TabIcon name="wallet-outline" size={size} color={color} focused={focused} accent={TAB_ACCENTS.payments} />
             ),
           }}
         />
@@ -255,8 +287,8 @@ export default function TabsLayout() {
           options={{
             title: "Shared",
             tabBarActiveTintColor: TAB_ACCENTS.shared,
-            tabBarIcon: ({ size, color }) => (
-              <TabIcon name="people-outline" size={size} color={color} />
+            tabBarIcon: ({ size, color, focused }) => (
+              <TabIcon name="people-outline" size={size} color={color} focused={focused} accent={TAB_ACCENTS.shared} />
             ),
           }}
         />
@@ -265,8 +297,8 @@ export default function TabsLayout() {
           options={{
             title: "Profile",
             tabBarActiveTintColor: TAB_ACCENTS.profile,
-            tabBarIcon: ({ size, color }) => (
-              <TabIcon name="person-outline" size={size} color={color} />
+            tabBarIcon: ({ size, color, focused }) => (
+              <TabIcon name="person-outline" size={size} color={color} focused={focused} accent={TAB_ACCENTS.profile} />
             ),
           }}
         />

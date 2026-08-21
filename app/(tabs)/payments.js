@@ -18,13 +18,14 @@ import {
 import { Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useFocusEffect, useNavigation, useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { deletePayment, getPayments } from "../../utils/storage";
 import { cancelPaymentReminder } from "../../utils/notifications";
 import { exportPaymentsToCsv } from "../../utils/exportPayments";
 import { recordAppOpened } from "../../utils/paymentAppState";
 import { CATEGORIES, getCategory } from "../../utils/categories";
 import { useTheme, withAlpha } from "../../utils/theme";
-import { isDueSoon, getDueUrgency } from "../../utils/dueDate";
+import { isDueSoon, getDueUrgency, isDueWithinOneDay } from "../../utils/dueDate";
 import { getPaymentDetailRoute } from "../../utils/ledger";
 import { AdBanner } from "../../components/AdBanner";
 import { getDefaultViewMode } from "../../utils/viewPreference";
@@ -74,9 +75,14 @@ function MonthSummaryCard({ payments, styles, theme }) {
   if (count === 0) return null;
 
   return (
-    <View style={styles.monthSummary}>
-      <View style={styles.monthSummaryIconBadge}>
-        <Ionicons name="calendar-outline" size={20} color={theme.info} />
+    <LinearGradient
+      colors={[withAlpha(theme.gradientStart, theme.mode === "dark" ? 0.24 : 0.15), withAlpha(theme.gradientEnd, theme.mode === "dark" ? 0.24 : 0.15)]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.monthSummary}
+    >
+      <View style={[styles.monthSummaryIconBadge, { backgroundColor: withAlpha(theme.brandPurple, theme.mode === "dark" ? 0.3 : 0.18) }]}>
+        <Ionicons name="calendar-outline" size={20} color={theme.brandPurpleDeep} />
       </View>
       <View style={styles.monthSummaryText}>
         <Text style={styles.monthSummaryLabel}>Due in {MONTH_LABEL}</Text>
@@ -84,7 +90,7 @@ function MonthSummaryCard({ payments, styles, theme }) {
           ${total} · {count} {count === 1 ? "payment" : "payments"}
         </Text>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -249,6 +255,31 @@ function dueDateStyle(urgency, styles) {
   return styles.cardDueFar;
 }
 
+// Due date "aaj" ya "1 din baaki" ho to due-date ke saath ek dheeme se
+// blink karte caution icon dikhate hain - sirf itna hi (koi text/logic change
+// nahi), taake user ka dhyan seedha us payment ki taraf jaye. Fade 100% <-> 45%
+// ke beech, calm/na-aggressive - "emergency alarm" jesa nahi.
+function UrgentPulseIcon({ theme }) {
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 0.45, duration: 900, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [opacity]);
+
+  return (
+    <Animated.View style={{ opacity }}>
+      <Ionicons name="alert-circle" size={14} color={theme.warning} />
+    </Animated.View>
+  );
+}
+
 function PaymentCard({ payment, onPress, styles, theme }) {
   const category = getCategory(payment.category);
 
@@ -293,9 +324,12 @@ function PaymentCard({ payment, onPress, styles, theme }) {
             {showPaidDateInstead ? (
               <Text style={styles.cardPaid}>Paid on {formatDate(payment.paidDate)}</Text>
             ) : (
-              <Text style={dueDateStyle(getDueUrgency(payment.dueDate), styles)}>
-                Due: {formatDate(payment.dueDate)}
-              </Text>
+              <View style={styles.dueDateRow}>
+                {isDueWithinOneDay(payment.dueDate) && <UrgentPulseIcon theme={theme} />}
+                <Text style={dueDateStyle(getDueUrgency(payment.dueDate), styles)}>
+                  Due: {formatDate(payment.dueDate)}
+                </Text>
+              </View>
             )}
           </View>
         </View>
@@ -656,8 +690,15 @@ export default function PaymentsScreen() {
       )}
 
       <Link href="/choose-payment-type" asChild>
-        <TouchableOpacity style={styles.fab}>
-          <Text style={styles.fabText}>+</Text>
+        <TouchableOpacity style={styles.fab} activeOpacity={0.85}>
+          <LinearGradient
+            colors={[theme.gradientStart, theme.gradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.fabGradient}
+          >
+            <Text style={styles.fabText}>+</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </Link>
     </View>
@@ -739,12 +780,11 @@ function getStyles(theme) {
     monthSummary: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: withAlpha(theme.info, theme.mode === "dark" ? 0.18 : 0.08),
       marginHorizontal: 16,
       marginTop: 12,
       marginBottom: 4,
-      padding: 14,
-      borderRadius: 12,
+      padding: 16,
+      borderRadius: 18,
     },
     monthSummaryIconBadge: {
       width: 36,
@@ -772,25 +812,27 @@ function getStyles(theme) {
       flexDirection: "row",
       backgroundColor: theme.surface,
       paddingHorizontal: 16,
-      paddingTop: 8,
+      paddingTop: 10,
+      paddingBottom: 2,
+      gap: 8,
     },
     tab: {
-      paddingVertical: 8,
-      paddingHorizontal: 16,
-      marginRight: 8,
+      paddingVertical: 9,
+      paddingHorizontal: 18,
       marginBottom: 8,
-      borderRadius: 18,
+      borderRadius: 20,
+      backgroundColor: theme.surfaceSoft,
     },
     tabActive: {
-      backgroundColor: withAlpha(theme.primary, theme.mode === "dark" ? 0.28 : 0.15),
+      backgroundColor: withAlpha(theme.brandPurple, theme.mode === "dark" ? 0.3 : 0.16),
     },
     tabText: {
       fontSize: 14,
       color: theme.textSecondary,
-      fontWeight: "600",
+      fontWeight: "700",
     },
     tabTextActive: {
-      color: theme.primary,
+      color: theme.brandPurpleDeep,
     },
     filters: {
       backgroundColor: theme.surface,
@@ -884,11 +926,14 @@ function getStyles(theme) {
     },
     card: {
       backgroundColor: theme.surface,
-      borderRadius: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
       padding: 16,
-      shadowColor: "#000",
-      shadowOpacity: theme.mode === "dark" ? 0.3 : 0.05,
-      shadowRadius: 4,
+      shadowColor: theme.mode === "dark" ? "#000" : theme.brandPurple,
+      shadowOpacity: theme.mode === "dark" ? 0.3 : 0.06,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 3 },
       elevation: 2,
     },
     cardMain: {
@@ -945,6 +990,11 @@ function getStyles(theme) {
       fontSize: 13,
       color: theme.textSecondary,
     },
+    dueDateRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    },
     cardDueOverdue: {
       fontSize: 13,
       color: theme.danger,
@@ -985,16 +1035,21 @@ function getStyles(theme) {
       position: "absolute",
       right: 20,
       bottom: 30,
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      backgroundColor: theme.primary,
+      width: 58,
+      height: 58,
+      borderRadius: 29,
+      elevation: 6,
+      shadowColor: theme.brandPurple,
+      shadowOpacity: 0.4,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+    },
+    fabGradient: {
+      width: "100%",
+      height: "100%",
+      borderRadius: 29,
       alignItems: "center",
       justifyContent: "center",
-      elevation: 4,
-      shadowColor: "#000",
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
     },
     fabText: {
       color: "#fff",

@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
-import { useTheme } from "../utils/theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { useTheme, withAlpha } from "../utils/theme";
 
 const NAVIGATE_AFTER_MS = 3500;
 // Title+subtitle block ki reserved height ka taqreeban aadha - logo ko itna
@@ -64,6 +65,18 @@ export default function SplashIntroScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      {/* Ambient warm glow behind the logo group - purely decorative, sits
+          underneath everything and never intercepts touches. */}
+      <View pointerEvents="none" style={styles.glowWrap}>
+        <LinearGradient
+          colors={[
+            withAlpha(theme.brandPeach, theme.mode === "dark" ? 0.28 : 0.35),
+            withAlpha(theme.brandPurple, 0),
+          ]}
+          style={styles.glow}
+        />
+      </View>
+
       {/* Logo aur uske neeche wala text ek hi group ke taur par slide karte
           hain, taake text hamesha logo ke bilkul neeche hi rahe (upar sirf
           logo akela move ho to donon ke beech gap ban jata hai). */}
@@ -103,6 +116,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  glowWrap: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    width: 420,
+    height: 420,
+    marginLeft: -210,
+    marginTop: -300,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  glow: {
+    width: 420,
+    height: 420,
+    borderRadius: 210,
+  },
   logoTextGroup: {
     alignItems: "center",
   },
@@ -113,13 +142,15 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   title: {
-    marginTop: 20,
-    fontSize: 36,
+    marginTop: 22,
+    fontSize: 38,
     fontFamily: "Pacifico_400Regular",
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 13,
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: "500",
+    letterSpacing: 0.2,
   },
   poweredRow: {
     position: "absolute",

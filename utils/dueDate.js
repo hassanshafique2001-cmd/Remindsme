@@ -14,3 +14,11 @@ export function getDueUrgency(dueDateISO) {
   if (diffDays <= 7) return "soon";
   return "normal";
 }
+
+// Due date abhi guzri nahi (overdue nahi) aur agle 24 ghante/1 din ke andar
+// hai - sirf ye hi cards ka due date "urgent" pulsing icon dikhata hai (overdue
+// apna alag red state rakhta hai, isse conflict nahi karta).
+export function isDueWithinOneDay(dueDateISO) {
+  const diffDays = (new Date(dueDateISO) - new Date()) / (1000 * 60 * 60 * 24);
+  return diffDays >= 0 && diffDays <= 1;
+}
