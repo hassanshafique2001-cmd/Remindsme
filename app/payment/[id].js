@@ -2,13 +2,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Animated, PanResponder, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, Stack, useLocalSearchParams } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { getPayments } from "../../utils/storage";
 import { markPaymentPaid, skipPaymentThisMonth } from "../../utils/paymentActions";
 import { getCategory } from "../../utils/categories";
 import { useTheme, withAlpha } from "../../utils/theme";
-import { isDueSoon, getDueUrgency } from "../../utils/dueDate";
+import { isDueSoon, getDueUrgency, isDueWithinOneDay } from "../../utils/dueDate";
 import { computeStreak, normalizeHistoryEntry } from "../../utils/streak";
 import { computePayoff } from "../../utils/payoff";
+import { UrgentDueIcon } from "../../components/UrgentDueIcon";
 
 const HANDLE_SIZE = 52;
 
@@ -282,11 +284,11 @@ function SwipeToPay({ onComplete, theme, styles, categoryColor }) {
   });
 
   return (
-    <View
-      style={[
-        styles.swipeTrack,
-        { backgroundColor: withAlpha(categoryColor, theme.mode === "dark" ? 0.25 : 0.14) },
-      ]}
+    <LinearGradient
+      colors={[withAlpha(categoryColor, theme.mode === "dark" ? 0.28 : 0.16), withAlpha(categoryColor, theme.mode === "dark" ? 0.16 : 0.08)]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+      style={styles.swipeTrack}
       onLayout={(e) => {
         trackWidth.current = e.nativeEvent.layout.width;
       }}
@@ -300,7 +302,7 @@ function SwipeToPay({ onComplete, theme, styles, categoryColor }) {
       >
         <Ionicons name="chevron-forward" size={22} color="#fff" />
       </Animated.View>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -388,20 +390,21 @@ export default function PaymentDetailScreen() {
         }}
       />
 
-      <View
-        style={[
-          styles.iconBadge,
-          { backgroundColor: withAlpha(category.color, theme.mode === "dark" ? 0.22 : 0.14) },
-        ]}
+      <LinearGradient
+        colors={[withAlpha(category.color, theme.mode === "dark" ? 0.3 : 0.2), withAlpha(category.color, theme.mode === "dark" ? 0.14 : 0.08)]}
+        style={styles.iconBadge}
       >
         <Ionicons name={category.icon} size={28} color={category.color} />
-      </View>
+      </LinearGradient>
 
       <Text style={styles.title}>{payment.title}</Text>
       <Text style={styles.amount}>${payment.amount}</Text>
-      <Text style={dueDateTextStyle(getDueUrgency(payment.dueDate), styles)}>
-        Due: {formatDate(payment.dueDate)}
-      </Text>
+      <View style={styles.dueDateRow}>
+        {isDueWithinOneDay(payment.dueDate) && <UrgentDueIcon theme={theme} size={16} />}
+        <Text style={dueDateTextStyle(getDueUrgency(payment.dueDate), styles)}>
+          Due: {formatDate(payment.dueDate)}
+        </Text>
+      </View>
       {payment.isRecurring && <StreakBadge streak={computeStreak(payment)} styles={styles} />}
 
       <PayoffCard payoff={computePayoff(payment)} styles={styles} theme={theme} />
@@ -463,14 +466,19 @@ function getStyles(theme) {
       justifyContent: "center",
     },
     iconBadge: {
-      width: 64,
-      height: 64,
-      borderRadius: 32,
-      backgroundColor: theme.primarySoft,
+      width: 68,
+      height: 68,
+      borderRadius: 34,
       alignItems: "center",
       justifyContent: "center",
       marginTop: 12,
       marginBottom: 16,
+    },
+    dueDateRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      marginTop: 6,
     },
     title: {
       fontSize: 24,
@@ -488,18 +496,15 @@ function getStyles(theme) {
       fontSize: 14,
       color: theme.danger,
       fontWeight: "600",
-      marginTop: 6,
     },
     dueDateSoon: {
       fontSize: 14,
       color: theme.warning,
       fontWeight: "600",
-      marginTop: 6,
     },
     dueDateFar: {
       fontSize: 14,
       color: theme.text,
-      marginTop: 6,
     },
     streakBadge: {
       backgroundColor: theme.dangerSoft,
@@ -516,7 +521,9 @@ function getStyles(theme) {
     payoffCard: {
       width: "100%",
       backgroundColor: theme.surface,
-      borderRadius: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
       padding: 16,
       marginTop: 16,
     },
@@ -538,7 +545,7 @@ function getStyles(theme) {
     payoffBarTrack: {
       height: 8,
       borderRadius: 4,
-      backgroundColor: theme.background,
+      backgroundColor: theme.surfaceSoft,
       overflow: "hidden",
     },
     payoffBarFill: {
@@ -568,9 +575,9 @@ function getStyles(theme) {
       gap: 6,
     },
     chip: {
-      width: 32,
-      height: 32,
-      borderRadius: 8,
+      width: 34,
+      height: 34,
+      borderRadius: 12,
       alignItems: "center",
       justifyContent: "center",
     },

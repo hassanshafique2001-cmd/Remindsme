@@ -28,6 +28,7 @@ import { useTheme, withAlpha } from "../../utils/theme";
 import { isDueSoon, getDueUrgency, isDueWithinOneDay } from "../../utils/dueDate";
 import { getPaymentDetailRoute } from "../../utils/ledger";
 import { AdBanner } from "../../components/AdBanner";
+import { UrgentDueIcon } from "../../components/UrgentDueIcon";
 import { getDefaultViewMode } from "../../utils/viewPreference";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -255,31 +256,6 @@ function dueDateStyle(urgency, styles) {
   return styles.cardDueFar;
 }
 
-// Due date "aaj" ya "1 din baaki" ho to due-date ke saath ek dheeme se
-// blink karte caution icon dikhate hain - sirf itna hi (koi text/logic change
-// nahi), taake user ka dhyan seedha us payment ki taraf jaye. Fade 100% <-> 45%
-// ke beech, calm/na-aggressive - "emergency alarm" jesa nahi.
-function UrgentPulseIcon({ theme }) {
-  const opacity = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.45, duration: 900, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 1, duration: 900, useNativeDriver: true }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [opacity]);
-
-  return (
-    <Animated.View style={{ opacity }}>
-      <Ionicons name="alert-circle" size={14} color={theme.warning} />
-    </Animated.View>
-  );
-}
-
 function PaymentCard({ payment, onPress, styles, theme }) {
   const category = getCategory(payment.category);
 
@@ -325,7 +301,7 @@ function PaymentCard({ payment, onPress, styles, theme }) {
               <Text style={styles.cardPaid}>Paid on {formatDate(payment.paidDate)}</Text>
             ) : (
               <View style={styles.dueDateRow}>
-                {isDueWithinOneDay(payment.dueDate) && <UrgentPulseIcon theme={theme} />}
+                {isDueWithinOneDay(payment.dueDate) && <UrgentDueIcon theme={theme} />}
                 <Text style={dueDateStyle(getDueUrgency(payment.dueDate), styles)}>
                   Due: {formatDate(payment.dueDate)}
                 </Text>

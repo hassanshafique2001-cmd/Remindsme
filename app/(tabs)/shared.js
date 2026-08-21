@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "../../contexts/AuthContext";
 import { getCategory } from "../../utils/categories";
 import { deleteSharedPayment, markMySharePaid, subscribeToMySharedPayments } from "../../utils/sharedPayments";
@@ -78,11 +79,15 @@ function SharedBillCard({ bill, myUid, styles, theme }) {
       </View>
 
       {myEntry && !myEntry.hasPaid && (
-        <TouchableOpacity
-          style={[styles.payButton, { backgroundColor: category.color }]}
-          onPress={handleMarkPaid}
-        >
-          <Text style={styles.payButtonText}>Mark My Share as Paid (${myEntry.share})</Text>
+        <TouchableOpacity onPress={handleMarkPaid} activeOpacity={0.85}>
+          <LinearGradient
+            colors={[theme.gradientStart, theme.gradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.payButton}
+          >
+            <Text style={styles.payButtonText}>Mark My Share as Paid (${myEntry.share})</Text>
+          </LinearGradient>
         </TouchableOpacity>
       )}
     </View>
@@ -150,8 +155,15 @@ export default function SharedBillsScreen() {
       )}
 
       <Link href="/add-shared-bill" asChild>
-        <TouchableOpacity style={styles.fab}>
-          <Text style={styles.fabText}>+</Text>
+        <TouchableOpacity style={styles.fab} activeOpacity={0.85}>
+          <LinearGradient
+            colors={[theme.gradientStart, theme.gradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.fabGradient}
+          >
+            <Text style={styles.fabText}>+</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </Link>
     </View>
@@ -183,12 +195,15 @@ function getStyles(theme) {
     },
     card: {
       backgroundColor: theme.surface,
-      borderRadius: 12,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: theme.border,
       padding: 16,
       marginBottom: 12,
-      shadowColor: "#000",
-      shadowOpacity: theme.mode === "dark" ? 0.3 : 0.05,
-      shadowRadius: 4,
+      shadowColor: theme.mode === "dark" ? "#000" : theme.brandPurple,
+      shadowOpacity: theme.mode === "dark" ? 0.3 : 0.06,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 3 },
       elevation: 2,
     },
     cardMain: {
@@ -244,9 +259,8 @@ function getStyles(theme) {
       color: theme.textSecondary,
     },
     payButton: {
-      backgroundColor: theme.primary,
-      borderRadius: 10,
-      paddingVertical: 12,
+      borderRadius: 14,
+      paddingVertical: 13,
       alignItems: "center",
       marginTop: 14,
     },
@@ -259,16 +273,21 @@ function getStyles(theme) {
       position: "absolute",
       right: 20,
       bottom: 30,
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      backgroundColor: theme.primary,
+      width: 58,
+      height: 58,
+      borderRadius: 29,
+      elevation: 6,
+      shadowColor: theme.brandPurple,
+      shadowOpacity: 0.4,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+    },
+    fabGradient: {
+      width: "100%",
+      height: "100%",
+      borderRadius: 29,
       alignItems: "center",
       justifyContent: "center",
-      elevation: 4,
-      shadowColor: "#000",
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
     },
     fabText: {
       color: "#fff",

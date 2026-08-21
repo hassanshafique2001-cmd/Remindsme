@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { doc, getDoc } from "firebase/firestore";
 import { useAuth } from "../../contexts/AuthContext";
 import { db } from "../../utils/firebase";
@@ -116,19 +117,23 @@ function ThemeSection({ theme, styles }) {
         {THEME_OPTIONS.map((opt) => {
           const active = preference === opt.value;
           return (
-            <TouchableOpacity
-              key={opt.value}
-              style={[styles.themeOption, active && styles.themeOptionActive]}
-              onPress={() => setPreference(opt.value)}
-            >
-              <Ionicons
-                name={opt.icon}
-                size={18}
-                color={active ? "#fff" : theme.text}
-              />
-              <Text style={[styles.themeOptionText, active && styles.themeOptionTextActive]}>
-                {opt.label}
-              </Text>
+            <TouchableOpacity key={opt.value} style={styles.themeOptionWrap} onPress={() => setPreference(opt.value)}>
+              {active ? (
+                <LinearGradient
+                  colors={[theme.gradientStart, theme.gradientEnd]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.themeOption}
+                >
+                  <Ionicons name={opt.icon} size={18} color="#fff" />
+                  <Text style={[styles.themeOptionText, styles.themeOptionTextActive]}>{opt.label}</Text>
+                </LinearGradient>
+              ) : (
+                <View style={[styles.themeOption, styles.themeOptionInactive]}>
+                  <Ionicons name={opt.icon} size={18} color={theme.text} />
+                  <Text style={styles.themeOptionText}>{opt.label}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           );
         })}
@@ -164,15 +169,23 @@ function PaymentsViewSection({ theme, styles }) {
         {VIEW_MODE_OPTIONS.map((opt) => {
           const active = mode === opt.value;
           return (
-            <TouchableOpacity
-              key={opt.value}
-              style={[styles.themeOption, active && styles.themeOptionActive]}
-              onPress={() => handleSelect(opt.value)}
-            >
-              <Ionicons name={opt.icon} size={18} color={active ? "#fff" : theme.text} />
-              <Text style={[styles.themeOptionText, active && styles.themeOptionTextActive]}>
-                {opt.label}
-              </Text>
+            <TouchableOpacity key={opt.value} style={styles.themeOptionWrap} onPress={() => handleSelect(opt.value)}>
+              {active ? (
+                <LinearGradient
+                  colors={[theme.gradientStart, theme.gradientEnd]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.themeOption}
+                >
+                  <Ionicons name={opt.icon} size={18} color="#fff" />
+                  <Text style={[styles.themeOptionText, styles.themeOptionTextActive]}>{opt.label}</Text>
+                </LinearGradient>
+              ) : (
+                <View style={[styles.themeOption, styles.themeOptionInactive]}>
+                  <Ionicons name={opt.icon} size={18} color={theme.text} />
+                  <Text style={styles.themeOptionText}>{opt.label}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           );
         })}
@@ -287,9 +300,14 @@ function AuthForm({ theme, styles }) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView contentContainerStyle={styles.formScroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.avatar}>
-          <Ionicons name="person-outline" size={40} color={theme.primary} />
-        </View>
+        <LinearGradient
+          colors={[theme.gradientStart, theme.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.avatar}
+        >
+          <Ionicons name="person-outline" size={40} color="#fff" />
+        </LinearGradient>
         <Text style={styles.title}>
           {mode === "signIn" ? "Welcome back" : "Create your account"}
         </Text>
@@ -362,14 +380,21 @@ function AuthForm({ theme, styles }) {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.submitButtonText}>
-              {mode === "signIn" ? "Sign In" : "Sign Up"}
-            </Text>
-          )}
+        <TouchableOpacity onPress={handleSubmit} disabled={loading} activeOpacity={0.85} style={styles.submitButtonWrap}>
+          <LinearGradient
+            colors={[theme.gradientStart, theme.gradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.submitButton}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.submitButtonText}>
+                {mode === "signIn" ? "Sign In" : "Sign Up"}
+              </Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -429,9 +454,14 @@ function SignedInView({ user, theme, styles }) {
       contentContainerStyle={styles.signedInContent}
     >
       <View style={styles.profileCard}>
-        <View style={styles.avatar}>
-          <Ionicons name="person" size={40} color={theme.primary} />
-        </View>
+        <LinearGradient
+          colors={[theme.gradientStart, theme.gradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.avatar}
+        >
+          <Ionicons name="person" size={40} color="#fff" />
+        </LinearGradient>
         <Text style={styles.fullName}>{fullName ?? user.email}</Text>
 
         <View style={styles.infoBox}>
@@ -529,13 +559,17 @@ function getStyles(theme) {
       marginTop: 40,
     },
     avatar: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      backgroundColor: theme.primarySoft,
+      width: 84,
+      height: 84,
+      borderRadius: 42,
       alignItems: "center",
       justifyContent: "center",
       marginBottom: 20,
+      shadowColor: theme.brandPurple,
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 4,
     },
     title: {
       fontSize: 18,
@@ -556,11 +590,11 @@ function getStyles(theme) {
       backgroundColor: theme.surface,
       borderWidth: 1,
       borderColor: theme.border,
-      borderRadius: 16,
+      borderRadius: 18,
       padding: 18,
-      shadowColor: "#000",
+      shadowColor: theme.mode === "dark" ? "#000" : theme.brandPurple,
       shadowOpacity: theme.mode === "dark" ? 0.3 : 0.06,
-      shadowRadius: 6,
+      shadowRadius: 8,
       shadowOffset: { width: 0, height: 2 },
       elevation: 3,
     },
@@ -569,7 +603,7 @@ function getStyles(theme) {
       backgroundColor: theme.surface,
       borderWidth: 1,
       borderColor: theme.border,
-      borderRadius: 16,
+      borderRadius: 18,
       padding: 18,
       marginTop: 16,
     },
@@ -583,18 +617,18 @@ function getStyles(theme) {
       gap: 8,
       marginTop: 10,
     },
-    themeOption: {
+    themeOptionWrap: {
       flex: 1,
+    },
+    themeOption: {
       alignItems: "center",
       paddingVertical: 12,
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: theme.border,
+      borderRadius: 12,
       gap: 4,
     },
-    themeOptionActive: {
-      backgroundColor: theme.primary,
-      borderColor: theme.primary,
+    themeOptionInactive: {
+      borderWidth: 1,
+      borderColor: theme.border,
     },
     themeOptionText: {
       fontSize: 12,
@@ -686,8 +720,9 @@ function getStyles(theme) {
       width: "100%",
       borderWidth: 1,
       borderColor: theme.border,
-      borderRadius: 8,
-      padding: 12,
+      backgroundColor: theme.surfaceSoft,
+      borderRadius: 12,
+      padding: 13,
       fontSize: 15,
       color: theme.text,
     },
@@ -697,14 +732,22 @@ function getStyles(theme) {
       marginTop: 12,
       textAlign: "center",
     },
-    submitButton: {
+    submitButtonWrap: {
       width: "100%",
-      backgroundColor: theme.primary,
-      borderRadius: 8,
-      paddingVertical: 14,
-      alignItems: "center",
       marginTop: 24,
       marginBottom: 16,
+      borderRadius: 14,
+      shadowColor: theme.brandPurple,
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
+    },
+    submitButton: {
+      width: "100%",
+      borderRadius: 14,
+      paddingVertical: 15,
+      alignItems: "center",
     },
     submitButtonText: {
       color: "#fff",
