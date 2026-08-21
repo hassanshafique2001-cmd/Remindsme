@@ -174,7 +174,7 @@ function StatTile({ label, value, styles, valueStyle, tileStyle, icon, iconColor
       {icon && (
         <Ionicons
           name={icon}
-          size={46}
+          size={22}
           color={iconColor}
           style={styles.statWatermark}
         />
@@ -269,7 +269,7 @@ export default function DashboardScreen() {
         end={{ x: 1, y: 1 }}
         style={styles.statTileWide}
       >
-        <Ionicons name="trending-up" size={52} color={withAlpha(theme.brandPurple, 0.2)} style={styles.statWatermark} />
+        <Ionicons name="trending-up" size={24} color={withAlpha(theme.brandPurple, 0.35)} style={styles.statWatermark} />
         <Text style={styles.statLabel}>Total Upcoming</Text>
         <Text style={[styles.statValueLarge, { color: theme.brandPurpleDeep }]}>${stats.upcomingTotal}</Text>
       </LinearGradient>
@@ -505,8 +505,8 @@ function getStyles(theme) {
     },
     statWatermark: {
       position: "absolute",
-      right: -6,
-      top: -6,
+      right: 12,
+      top: 12,
     },
     statTileWide: {
       borderRadius: 18,

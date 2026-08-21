@@ -3,6 +3,7 @@ import { Dimensions, Image, Modal, StyleSheet, Text, TouchableOpacity, View } fr
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs, usePathname } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme, withAlpha } from "../../utils/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hasSeenSignupNudge, markSignupNudgeSeen } from "../../utils/onboarding";
@@ -195,6 +196,7 @@ function SignupNudge({ onDismiss, theme }) {
 
 export default function TabsLayout() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const pathname = usePathname();
   const [showNudge, setShowNudge] = useState(false);
@@ -248,8 +250,13 @@ export default function TabsLayout() {
             borderTopWidth: 0,
             borderTopLeftRadius: 22,
             borderTopRightRadius: 22,
-            height: 68,
+            // Fixed height ignore kar deta tha device ka bottom safe-area
+            // (gesture bar/nav buttons) - is wajah se Android/Expo Go mein
+            // tab bar aadha nichay se cut ho jata tha. Ab base height +
+            // insets.bottom, taake wo hamesha system bar se upar rahe.
+            height: 58 + insets.bottom,
             paddingTop: 8,
+            paddingBottom: insets.bottom,
             shadowColor: theme.brandPurple,
             shadowOpacity: theme.mode === "dark" ? 0.25 : 0.1,
             shadowRadius: 16,
