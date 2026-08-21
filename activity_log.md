@@ -50,3 +50,5 @@ Next: user asked to build a new Android production APK/AAB now that both waves a
 
 ## Google Play production access granted
 The mandatory 14-day/12-tester closed testing period finished — Google Play Console now shows "Congratulations! Your app has been granted Google Play production access." Next step: create a Production release in Play Console using the versionCode 6 `.aab` above, then roll out.
+- Created Production release `1.0.0 (6)`, rolled out to Canada, India + 4 more countries/regions. Went into Google review ("Changes in review" in Publishing overview).
+- **Reminds Me is now LIVE on Google Play** — the public store listing (https://play.google.com/store/apps/details?id=com.sheikhgroup.remindsme) is showing with a working Install button, confirmed by the user. Review turned around fast. iOS is still separately in Apple App Store review on an earlier (pre-redesign) build.
