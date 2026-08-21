@@ -46,3 +46,7 @@ Wave 2 (implemented + verified in web preview, no console errors):
 Two live bugs reported by the user testing via Expo Go on Android were also fixed in this pass: dashboard stat-card watermark icons were too large (shrunk from 46/52px to 22/24px, repositioned inward), and the bottom tab bar was getting clipped by the system nav bar (fixed height ignored `useSafeAreaInsets()` — now `height: 58 + insets.bottom` with matching `paddingBottom`).
 
 Next: user asked to build a new Android production APK/AAB now that both waves are in (native `expo-linear-gradient` dependency requires a real build, can't ship via OTA). iOS is intentionally left on its current App-Store-review build until the user asks for an iOS rebuild separately.
+- Production build (versionCode 6) succeeded: https://expo.dev/artifacts/eas/Qr8q3OBAmQIGLh-q3EqgOqyjpG1Va4Qkis89-5WUZQ4.aab
+
+## Google Play production access granted
+The mandatory 14-day/12-tester closed testing period finished — Google Play Console now shows "Congratulations! Your app has been granted Google Play production access." Next step: create a Production release in Play Console using the versionCode 6 `.aab` above, then roll out.
