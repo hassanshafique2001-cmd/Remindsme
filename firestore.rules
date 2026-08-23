@@ -2,6 +2,15 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // App update-check ke liye latest version numbers - guest users bhi
+    // (sign in kiye bina) padh sakte hain kyunki update prompt sabko dikhna
+    // hai. Sirf Firebase Console/Admin SDK se likha ja sakta hai, app se kabhi
+    // nahi - is liye write hamesha false.
+    match /appConfig/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Har user ka apna profile doc - koi bhi signed-in user isay READ kar
     // sakta hai (Shared Bills feature ke liye zaroori: kisi doosre user ko
     // uski email se dhoondhna). Sirf khud apna doc likh sakta hai.

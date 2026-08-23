@@ -24,6 +24,8 @@ import { adsSupported } from "../utils/ads";
 import { initAds } from "../utils/initAds";
 import { scheduleWeeklyDigest } from "../utils/weeklyDigest";
 import { setupQuickActions, getInitialQuickAction, addQuickActionListener } from "../utils/quickActions";
+import { checkForUpdate } from "../utils/appUpdateCheck";
+import { UpdatePrompt } from "../components/UpdatePrompt";
 import { ThemeProvider, useTheme } from "../utils/theme";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 
@@ -136,7 +138,19 @@ function AppContent({ theme, fontsLoaded }) {
   // null = abhi tak AsyncStorage se lock preference check nahi hui.
   const [lockEnabled, setLockEnabled] = useState(null);
   const [locked, setLocked] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState(null);
   const appState = useRef(AppState.currentState);
+
+  // App khulte hi ek dafa check karte hain - agar Firestore "appConfig/version"
+  // mein is platform ka latest version, installed version se naya hai to
+  // "Update Now" prompt dikhate hain. "ready" hone tak rukte hain taake
+  // splash/lock screen ke upar overlap na ho.
+  useEffect(() => {
+    if (!ready) return;
+    checkForUpdate().then((info) => {
+      if (info) setUpdateInfo(info);
+    });
+  }, [ready]);
 
   useEffect(() => {
     isAppLockEnabled().then((enabled) => {
@@ -239,6 +253,13 @@ function AppContent({ theme, fontsLoaded }) {
           options={{ title: "Split a Bill", presentation: "modal" }}
         />
       </Stack>
+
+      <UpdatePrompt
+        visible={!!updateInfo}
+        storeUrl={updateInfo?.storeUrl}
+        onDismiss={() => setUpdateInfo(null)}
+        theme={theme}
+      />
     </SafeAreaProvider>
   );
 }
