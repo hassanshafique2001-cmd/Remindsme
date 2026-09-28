@@ -92,6 +92,69 @@ export async function schedulePaymentReminder(payment) {
   return notificationId;
 }
 
+// Ledger transactions ke liye alag reminder scheduler - bills wale "9 AM
+// fixed" rule ki jagah, yahan user khud (transaction ki apni date se bilkul
+// independent) ek poori date+time "reminderDate" choose karta hai, aur
+// chaahe to usi ke upar "Remind Me" (on due date/N din pehle) offset bhi laga
+// sakta hai - waqt hamesha reminderDate ka apna waqt rehta hai (9 AM jaisa
+// koi fixed rule nahi). Monthly recurring hone par native MONTHLY trigger use
+// karte hain - OS khud har mahine usi din/waqt fire karta hai, humein "mark
+// paid" jaisi kisi manual reschedule ki zaroorat nahi.
+export async function scheduleLedgerReminder(payment) {
+  if (Platform.OS === "web") return null;
+
+  const granted = await requestNotificationPermissions();
+  if (!granted) return null;
+
+  const daysBefore = payment.reminderDaysBefore ?? 0;
+  const base = new Date(payment.reminderDate);
+  const reminderDate = new Date(
+    base.getFullYear(),
+    base.getMonth(),
+    base.getDate() - daysBefore,
+    base.getHours(),
+    base.getMinutes(),
+    0
+  );
+  const body = payment.notes
+    ? `${payment.title} - $${payment.amount} (${payment.notes}).`
+    : `${payment.title} - $${payment.amount}.`;
+
+  if (payment.isRecurring) {
+    return await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Ledger Reminder",
+        body,
+        data: { paymentId: payment.id },
+        categoryIdentifier: PAYMENT_CATEGORY,
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.MONTHLY,
+        day: reminderDate.getDate(),
+        hour: reminderDate.getHours(),
+        minute: reminderDate.getMinutes(),
+      },
+    });
+  }
+
+  // One-time reminder - agar chuni gayi date+time guzar chuki hai to schedule
+  // hi na karein (past date trigger expo-notifications mein error deta hai).
+  if (reminderDate.getTime() <= Date.now()) return null;
+
+  return await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Ledger Reminder",
+      body,
+      data: { paymentId: payment.id },
+      categoryIdentifier: PAYMENT_CATEGORY,
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: reminderDate,
+    },
+  });
+}
+
 export async function cancelPaymentReminder(notificationId) {
   if (Platform.OS === "web" || !notificationId) return;
   await Notifications.cancelScheduledNotificationAsync(notificationId);

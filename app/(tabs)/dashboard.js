@@ -323,8 +323,14 @@ export default function DashboardScreen() {
       )}
 
       {(ledgerTotals.totalToReceive > 0 || ledgerTotals.totalToPay > 0) && (
-        <>
-          <Text style={styles.sectionLabel}>Lending</Text>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/ledger")}>
+          <View style={styles.lendingHeaderRow}>
+            <Text style={[styles.sectionLabel, { marginTop: 0, marginBottom: 0 }]}>Lending</Text>
+            <View style={styles.lendingLinkRow}>
+              <Text style={styles.lendingLinkText}>View Ledger</Text>
+              <Ionicons name="chevron-forward" size={14} color={theme.primary} />
+            </View>
+          </View>
           <View style={styles.statRow}>
             <StatTile
               label="You'll Receive"
@@ -351,7 +357,7 @@ export default function DashboardScreen() {
               }}
             />
           </View>
-        </>
+        </TouchableOpacity>
       )}
 
       <Text style={styles.sectionLabel}>By Category</Text>
@@ -567,6 +573,23 @@ function getStyles(theme) {
       marginTop: 28,
       marginBottom: 12,
       letterSpacing: 0.2,
+    },
+    lendingHeaderRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginTop: 28,
+      marginBottom: 12,
+    },
+    lendingLinkRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 2,
+    },
+    lendingLinkText: {
+      fontSize: 12,
+      fontWeight: "700",
+      color: theme.primary,
     },
     categoryList: {
       backgroundColor: theme.surface,

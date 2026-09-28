@@ -35,6 +35,8 @@ export async function addPayment(uid, payment) {
     // "Ledger" (lend/borrow) category ke liye - baaki categories ke liye khali/null rehte hain.
     phoneNumber: payment.phoneNumber ?? "",
     ledgerDirection: payment.ledgerDirection ?? null,
+    // Ledger reminder ki apni date+time - dueDate se independent (dekhein utils/notifications.js).
+    reminderDate: payment.reminderDate ?? null,
     // Ledger entry ka kitna hissa ab tak receive/pay ho chuka hai (partial
     // settlements ke liye) - "amount" hamesha total owed rehta hai.
     amountReceived: payment.amountReceived ?? 0,

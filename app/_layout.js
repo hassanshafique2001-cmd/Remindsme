@@ -25,7 +25,7 @@ import { initAds } from "../utils/initAds";
 import { scheduleWeeklyDigest } from "../utils/weeklyDigest";
 import { setupQuickActions, getInitialQuickAction, addQuickActionListener } from "../utils/quickActions";
 import { checkForUpdate } from "../utils/appUpdateCheck";
-import { UpdatePrompt } from "../components/UpdatePrompt";
+import { MandatoryUpdateScreen } from "../components/MandatoryUpdateScreen";
 import { ThemeProvider, useTheme } from "../utils/theme";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 
@@ -139,16 +139,22 @@ function AppContent({ theme, fontsLoaded }) {
   const [lockEnabled, setLockEnabled] = useState(null);
   const [locked, setLocked] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
+  // Jab tak yeh true na ho, update check abhi pending hai - render ko rok kar
+  // rakhte hain (splash screen dikhti rehti hai) taake pehle asal app dikh kar
+  // phir achanak mandatory update screen se replace na ho (flash na ho).
+  const [updateChecked, setUpdateChecked] = useState(false);
   const appState = useRef(AppState.currentState);
 
-  // App khulte hi ek dafa check karte hain - agar Firestore "appConfig/version"
-  // mein is platform ka latest version, installed version se naya hai to
-  // "Update Now" prompt dikhate hain. "ready" hone tak rukte hain taake
-  // splash/lock screen ke upar overlap na ho.
+  // App khulte hi ek dafa check karte hain - jo version abhi Play Store/App
+  // Store pe genuinely LIVE hai, installed version se naya hai to poori app
+  // mandatory update screen se block ho jati hai (dekhein neeche render logic
+  // aur components/MandatoryUpdateScreen.js). "ready" hone tak rukte hain
+  // taake yeh check splash/lock screen ke upar overlap na ho.
   useEffect(() => {
     if (!ready) return;
     checkForUpdate().then((info) => {
-      if (info) setUpdateInfo(info);
+      setUpdateInfo(info);
+      setUpdateChecked(true);
     });
   }, [ready]);
 
@@ -204,16 +210,26 @@ function AppContent({ theme, fontsLoaded }) {
   }, [ready]);
 
   useEffect(() => {
-    if (ready && lockEnabled !== null) {
+    if (ready && lockEnabled !== null && updateChecked) {
       SplashScreen.hideAsync().catch(() => {});
     }
-  }, [ready, lockEnabled]);
+  }, [ready, lockEnabled, updateChecked]);
 
-  // Jab tak font load na ho AUR Firebase yeh confirm na kar de ke pehle se
-  // koi login session hai ya nahi, kuch bhi render nahi karte - native splash
-  // hi dikhti rehti hai. Isse addPayment/getPayments jaise calls kabhi bhi
-  // stale "logged out" state dekh kar galti se local storage use nahi karte.
-  if (!ready || lockEnabled === null) return null;
+  // Jab tak font load na ho, Firebase yeh confirm na kar de ke pehle se koi
+  // login session hai ya nahi, AUR update check complete na ho jaye, kuch
+  // bhi render nahi karte - native splash hi dikhti rehti hai. Update check
+  // ka wait isi liye zaroori hai taake pehle asal app dikh kar phir achanak
+  // mandatory update screen se replace na ho (flash na ho).
+  if (!ready || lockEnabled === null || !updateChecked) return null;
+
+  if (updateInfo) {
+    return (
+      <SafeAreaProvider style={{ backgroundColor: theme.background }}>
+        <StatusBar style={theme.mode === "dark" ? "light" : "dark"} />
+        <MandatoryUpdateScreen storeUrl={updateInfo.storeUrl} theme={theme} />
+      </SafeAreaProvider>
+    );
+  }
 
   if (locked) {
     return (
@@ -241,10 +257,6 @@ function AppContent({ theme, fontsLoaded }) {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
-          name="choose-payment-type"
-          options={{ title: "New Reminder", presentation: "modal" }}
-        />
-        <Stack.Screen
           name="add-payment"
           options={{ title: "Add Payment", presentation: "modal" }}
         />
@@ -253,13 +265,6 @@ function AppContent({ theme, fontsLoaded }) {
           options={{ title: "Split a Bill", presentation: "modal" }}
         />
       </Stack>
-
-      <UpdatePrompt
-        visible={!!updateInfo}
-        storeUrl={updateInfo?.storeUrl}
-        onDismiss={() => setUpdateInfo(null)}
-        theme={theme}
-      />
     </SafeAreaProvider>
   );
 }

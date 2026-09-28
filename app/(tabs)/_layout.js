@@ -14,11 +14,14 @@ import { hasSeenTutorial, markTutorialSeen } from "../../utils/tutorial";
 const TAB_ACCENTS = {
   dashboard: "#2563eb",
   payments: "#2e7d32",
+  // Ledger category ka apna established color (utils/categories.js) - taake
+  // tab aur uski entries hamesha ek hi rang se pehchani jayein.
+  ledger: "#F43F5E",
   shared: "#F59E0B",
   profile: "#EC4899",
 };
 
-// Pehli dafa app khulne par 4-step walkthrough - har step ek bottom tab ko
+// Pehli dafa app khulne par 5-step walkthrough - har step ek bottom tab ko
 // explain karta hai, isi tarteeb mein jis tarteeb mein tabs bar mein hain.
 const TUTORIAL_STEPS = [
   {
@@ -33,7 +36,14 @@ const TUTORIAL_STEPS = [
     color: TAB_ACCENTS.payments,
     title: "Payments",
     description:
-      "Add bills, subscriptions, and reminders here. Switch between list and calendar view, and track money you lend or borrow in the Ledger.",
+      "Add bills, subscriptions, and reminders here. Switch between list and calendar view to stay on top of due dates.",
+  },
+  {
+    icon: "swap-horizontal-outline",
+    color: TAB_ACCENTS.ledger,
+    title: "Ledger",
+    description:
+      "Track money you owe and money others owe you - see each person's balance and full transaction history.",
   },
   {
     icon: "people-outline",
@@ -51,9 +61,9 @@ const TUTORIAL_STEPS = [
   },
 ];
 
-// Har step ke corresponding tab (Dashboard/Payments/Shared/Profile) ke bilkul
-// upar arrow point karne ke liye uska horizontal center nikalta hai - 4 tabs
-// screen ki width mein barabar phaili hoti hain.
+// Har step ke corresponding tab (Dashboard/Payments/Ledger/Shared/Profile) ke
+// bilkul upar arrow point karne ke liye uska horizontal center nikalta hai -
+// tabs screen ki width mein barabar phaili hoti hain.
 function getTabCenterX(index) {
   const screenWidth = Dimensions.get("window").width;
   return (screenWidth / TUTORIAL_STEPS.length) * (index + 0.5);
@@ -286,6 +296,16 @@ export default function TabsLayout() {
             tabBarActiveTintColor: TAB_ACCENTS.payments,
             tabBarIcon: ({ size, color, focused }) => (
               <TabIcon name="wallet-outline" size={size} color={color} focused={focused} accent={TAB_ACCENTS.payments} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="ledger"
+          options={{
+            title: "Ledger",
+            tabBarActiveTintColor: TAB_ACCENTS.ledger,
+            tabBarIcon: ({ size, color, focused }) => (
+              <TabIcon name="swap-horizontal-outline" size={size} color={color} focused={focused} accent={TAB_ACCENTS.ledger} />
             ),
           }}
         />

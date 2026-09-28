@@ -60,3 +60,48 @@ export function getPaymentDetailRoute(payment) {
   }
   return `/payment/${payment.id}`;
 }
+
+// Saari Ledger entries ko person (naam) ke hisaab se group karta hai - Ledger
+// tab ki contact list isi se banti hai. Naam match case-insensitive/trimmed
+// hai (getLedgerEntriesForPerson jaisa hi), taake "John" aur "john " ek hi
+// contact maane jayein - koi alag "contacts" collection nahi, identity hamesha
+// naam hi hai (existing data model ka hissa).
+export function groupLedgerContacts(payments) {
+  const entries = payments.filter((p) => p.category === "ledger");
+  const byName = new Map();
+
+  entries.forEach((e) => {
+    const key = e.title.trim().toLowerCase();
+    if (!byName.has(key)) byName.set(key, []);
+    byName.get(key).push(e);
+  });
+
+  return Array.from(byName.values()).map((group) => {
+    const sorted = [...group].sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
+    return {
+      name: group[0].title.trim(),
+      phoneNumber: group.find((e) => e.phoneNumber)?.phoneNumber ?? "",
+      balance: computePersonBalance(group),
+      lastTransactionDate: sorted[0].dueDate,
+      entryCount: group.length,
+    };
+  });
+}
+
+// Ek person ki history ko timeline (purani se nayi) mein chalte hue har
+// transaction ke baad ka cumulative balance nikalta hai - taake har row apna
+// "us waqt ka balance" dikha sake. Koi naya data invent nahi karta, sirf
+// existing amount/amountReceived/ledgerDirection/dueDate se derive hota hai.
+// Positive = person aapko wo dene hain, negative = aap unhe dene hain. Aakhri
+// (sabse nayi) entry ka runningBalance hamesha computePersonBalance() ke
+// "net" se match karta hai.
+export function computeHistoryWithRunningBalance(entries) {
+  const chronological = [...entries].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  let running = 0;
+  const withBalance = chronological.map((e) => {
+    const remaining = remainingBalance(e);
+    running += e.ledgerDirection === "borrowed" ? -remaining : remaining;
+    return { ...e, runningBalance: running };
+  });
+  return withBalance.reverse();
+}

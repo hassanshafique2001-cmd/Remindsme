@@ -5,13 +5,18 @@ import { adsSupported, getBannerAdUnitId } from "../utils/ads";
 // hain jab yeh platform/build ads support karta ho. Agar yeh file ke top par
 // normal "import" hoti to Expo Go mein poori app crash ho jati - us package
 // ka native module wrapper import hote hi turant native binding dhoondta hai
-// aur na milne par error throw karta hai.
+// aur na milne par error throw karta hai. try/catch mein wrap kiya hai taake
+// native linking kabhi fail ho to poori screen crash na ho, sirf ad na dikhe.
 let BannerAd = null;
 let BannerAdSize = null;
 if (adsSupported) {
-  const googleMobileAds = require("react-native-google-mobile-ads");
-  BannerAd = googleMobileAds.BannerAd;
-  BannerAdSize = googleMobileAds.BannerAdSize;
+  try {
+    const googleMobileAds = require("react-native-google-mobile-ads");
+    BannerAd = googleMobileAds.BannerAd;
+    BannerAdSize = googleMobileAds.BannerAdSize;
+  } catch {
+    // native module link nahi ho paya - AdBanner khamoshi se kuch nahi dikhayega.
+  }
 }
 
 // Payments tab ke bottom mein FAB se upar lagta hai. Expo Go ya web par

@@ -290,13 +290,7 @@ function PaymentCard({ payment, onPress, styles, theme }) {
             <Text style={styles.cardAmount}>${payment.amount}</Text>
           </View>
           <View style={styles.cardRow}>
-            <Text style={styles.cardCategory}>
-              {payment.category === "ledger"
-                ? payment.ledgerDirection === "borrowed"
-                  ? "You Owe"
-                  : "Owes You"
-                : category.label}
-            </Text>
+            <Text style={styles.cardCategory}>{category.label}</Text>
             {showPaidDateInstead ? (
               <Text style={styles.cardPaid}>Paid on {formatDate(payment.paidDate)}</Text>
             ) : (
@@ -459,18 +453,22 @@ export default function PaymentsScreen() {
     });
   }, [navigation, payments, theme]);
 
+  // Ledger (lend/borrow) ab apni alag "Ledger" tab mein hai - Payments sirf
+  // bills/subscriptions ke liye hai, is liye ledger entries yahan kabhi nahi dikhtin.
+  const billPayments = useMemo(() => payments.filter((p) => p.category !== "ledger"), [payments]);
+
   // Recurring payments hamesha Upcoming mein rehti hain (unka card recycle hota hai) -
   // sirf ek-baar wali (non-recurring) payments paid hone ke baad "Paid" tab mein jati hain.
   const upcoming = useMemo(
-    () => payments.filter((p) => p.isRecurring || !p.isPaid),
-    [payments]
+    () => billPayments.filter((p) => p.isRecurring || !p.isPaid),
+    [billPayments]
   );
   const history = useMemo(
     () =>
-      payments
+      billPayments
         .filter((p) => !p.isRecurring && p.isPaid)
         .sort((a, b) => new Date(b.paidDate) - new Date(a.paidDate)),
-    [payments]
+    [billPayments]
   );
 
   const visibleUpcoming = useMemo(() => {
@@ -519,7 +517,7 @@ export default function PaymentsScreen() {
 
   return (
     <View style={styles.container}>
-      <MonthSummaryCard payments={payments} styles={styles} theme={theme} />
+      <MonthSummaryCard payments={billPayments} styles={styles} theme={theme} />
       <View style={styles.tabRow}>
         <TouchableOpacity
           style={[styles.tab, activeTab === "upcoming" && styles.tabActive]}
@@ -560,7 +558,7 @@ export default function PaymentsScreen() {
               All
             </Text>
           </TouchableOpacity>
-          {CATEGORIES.map((c) => {
+          {CATEGORIES.filter((c) => c.key !== "ledger").map((c) => {
             const active = selectedCategory === c.key;
             return (
               <TouchableOpacity
@@ -665,7 +663,7 @@ export default function PaymentsScreen() {
         />
       )}
 
-      <Link href="/choose-payment-type" asChild>
+      <Link href="/add-payment" asChild>
         <TouchableOpacity style={styles.fab} activeOpacity={0.85}>
           <LinearGradient
             colors={[theme.gradientStart, theme.gradientEnd]}

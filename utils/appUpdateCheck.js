@@ -22,10 +22,27 @@ function isNewer(remote, current) {
   return false;
 }
 
+// Update check ab app ko "mandatory" block karta hai (dekhein app/_layout.js) -
+// is liye ek hung/slow network is check ko hamesha ke liye latka nahi sakta.
+// Timeout hone par sirf yeh ek check fail hota hai (fail-open, null return),
+// app normally chal jati hai - kisi genuine outdated version ko miss karna
+// user ko permanently lock kar dene se kahin behtar hai.
+const CHECK_TIMEOUT_MS = 6000;
+
+async function fetchWithTimeout(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CHECK_TIMEOUT_MS);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 // Apple ka official, public "iTunes Lookup" API - koi credentials nahi chahiye,
 // seedha wahi version deta hai jo abhi App Store pe live hai.
 async function fetchLiveIOSVersion() {
-  const res = await fetch(`https://itunes.apple.com/lookup?id=${IOS_APP_ID}`);
+  const res = await fetchWithTimeout(`https://itunes.apple.com/lookup?id=${IOS_APP_ID}`);
   const json = await res.json();
   return json?.results?.[0]?.version ?? null;
 }
@@ -36,7 +53,7 @@ async function fetchLiveIOSVersion() {
 // match na ho, checkForUpdate chup chaap null return kar deta hai (feature
 // silently skip ho jati hai, app crash nahi hoti).
 async function fetchLiveAndroidVersion() {
-  const res = await fetch(
+  const res = await fetchWithTimeout(
     `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE_ID}&hl=en&gl=US`
   );
   const html = await res.text();
